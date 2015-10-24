@@ -1,0 +1,43 @@
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import org.graphstream.algorithm.APSP;
+import org.graphstream.algorithm.APSP.APSPInfo;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.implementations.DefaultGraph;
+import org.graphstream.stream.file.FileSourceDGS;
+
+object  APSPTest {
+
+  //     B-(1)-C
+  //    /       \
+  //  (1)       (10)
+  //  /           \
+  // A             F
+  //  \           /
+  //  (1)       (1)
+  //    \       /
+  //     D-(1)-E
+
+
+  def main(args: Array[String]) {
+    val my_graph = "DGS004\n" + "my 0 0\n" + "an A \n" + "an B \n"+ "an C \n" + "an D \n"+ "an E \n" + "an F \n" + "ae AB A B weight:1 \n"  + "ae AD A D weight:1 \n"  + "ae BC B C weight:1 \n"  + "ae CF C F weight:10 \n"  + "ae DE D E weight:1 \n"  + "ae EF E F weight:1 \n";
+    val graph = new DefaultGraph("APSP Test");
+    val bs = new ByteArrayInputStream(my_graph.getBytes());
+
+    val source = new FileSourceDGS();
+    source.addSink(graph);
+    source.readAll(bs);
+
+    val apsp = new APSP();
+    apsp.init(graph); // registering apsp as a sink for the graph
+    apsp.setDirected(false); // undirected graph
+    apsp.setWeightAttributeName("weight"); // ensure that the attribute name
+    // used is "weight"
+    apsp.compute(); // the method that actually computes shortest paths
+
+    val info : APSPInfo = graph.getNode("F")
+      .getAttribute(APSPInfo.ATTRIBUTE_NAME);
+    println(info.getShortestPathTo("A"));
+  }
+}
